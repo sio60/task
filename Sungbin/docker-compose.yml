@@ -1,0 +1,40 @@
+services:
+  # 1. 데이터베이스 (MySQL 8.0)
+  db:
+    image: mysql:8.0    
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASS}
+      MYSQL_DATABASE: ${DB_NAME}     
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  # 2. 백엔드 (Node.js)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_USER: ${DB_USER}       
+      DB_PASS: ${DB_PASS}
+      DB_NAME: ${DB_NAME}
+
+  # 3. 프론트엔드 (React)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+    stdin_open: true
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:
