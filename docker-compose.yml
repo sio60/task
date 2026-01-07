@@ -1,0 +1,67 @@
+services:
+  # MySQL 데이터베이스
+  database:
+    image: mysql:8.0
+    container_name: counter-database
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    ports:
+      - "${MYSQL_PORT}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./backend/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - counter-network
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Spring Boot 백엔드
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: counter-backend
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT}:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://database:3306/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - counter-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/api/counter" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx 프론트엔드
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: counter-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT}:80"
+    depends_on:
+      - backend
+    networks:
+      - counter-network
+
+networks:
+  counter-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local

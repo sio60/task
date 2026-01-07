@@ -1,0 +1,26 @@
+# 환경 변수
+.env
+
+# Gradle
+backend/build/
+backend/.gradle/
+backend/gradle/
+backend/gradlew
+backend/gradlew.bat
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# MacOS
+.DS_Store
+
+# Docker
+*.log
+
+# Build outputs
+extra/
+backend/target/
