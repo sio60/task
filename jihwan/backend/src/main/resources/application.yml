@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    # 환경 변수가 없으면 localhost, count_db, root, 1234를 기본값으로 사용하도록 설정함
+    url: jdbc:mysql://${MYSQL_HOST}:3306/${MYSQL_DB}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
+    username: ${MYSQL_ID}
+    password: ${MYSQL_PW}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
